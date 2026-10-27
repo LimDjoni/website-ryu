@@ -6,8 +6,8 @@ const eventDate = new Date('2026-11-28T11:30:00+07:00');
 
 const eventDetails = {
   venue: 'KFC Arifin Ahmad',
-  date: 'Sabtu, 28 November 2026',
-  time: '11.30 WIB',
+  date: 'Saturday, 28 November 2026',
+  time: '11:30 - 13:30 WIB',
   address:
     'Jl. Arifin Ahmad No.kel, Sidomulyo Tim., Marpoyan Damai, Kota Pekanbaru, Riau 28125',
   mapsUrl: 'https://maps.app.goo.gl/DfCk3nw7Yb9qDpU19',
@@ -250,7 +250,7 @@ export default function SectionEventDetails() {
         <div className="mt-4 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-4 sm:mt-5 sm:flex-row">
           <div className="mt-3 flex items-center justify-center gap-2 text-center">
             <span className="text-[8px] font-black tracking-[0.15em] text-white/40 sm:text-[10px] sm:tracking-[0.2em]">
-              RJCH RACING · BIRTHDAY GRAND PRIX · 2026
+              RJC RACING · BIRTHDAY GRAND PRIX · 2026
             </span>
             <span className="text-sm">🏁</span>
           </div>

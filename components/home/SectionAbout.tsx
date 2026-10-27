@@ -101,10 +101,10 @@ export default function SectionAbout() {
             </p>
 
             <a
-              href="#gallery"
+              href="#event-details"
               className="group mt-5 flex w-fit items-center justify-center gap-3 bg-[#FF3939] px-4 py-3.5 text-xs font-black tracking-[0.15em] text-white uppercase transition hover:bg-[#FFD447] hover:text-[#07182B] focus-visible:ring-2 focus-visible:ring-[#FFD447] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B2742] focus-visible:outline-none"
             >
-              Explore the memories <span>↗</span>
+              Save the date <span>↗</span>
             </a>
           </div>
         </div>

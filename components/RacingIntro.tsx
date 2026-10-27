@@ -129,7 +129,7 @@ export default function RacingIntro({
               {/* Bottom metadata */}
               <div className="mt-5 flex items-center justify-between border-t border-white/15 pt-3">
                 <span className="text-[9px] font-bold tracking-widest text-white/60 sm:text-[10px]">
-                  RJCH RACING
+                  RJC RACING
                 </span>
 
                 <span className="bg-[#FF3939] px-3 py-1.5 text-[9px] font-black tracking-widest text-white sm:text-[10px]">

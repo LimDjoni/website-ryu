@@ -1,73 +1,145 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 
 type Wish = {
+  id: number | string;
   name: string;
   message: string;
+  created_at: string;
 };
-
-const initialWishes: Wish[] = [
-  {
-    name: 'Your Supporters',
-    message:
-      'Wishing you a year full of happiness, unforgettable memories, and new adventures. Keep shining, Ryuiichi!',
-  },
-  {
-    name: 'Team Birthday',
-    message:
-      'Another year, another lap! May every new chapter bring you closer to your dreams. Happy Birthday!',
-  },
-  {
-    name: 'Team Birthday',
-    message:
-      'Another year, another lap! May every new chapter bring you closer to your dreams. Happy Birthday!',
-  },
-  {
-    name: 'Team Birthday',
-    message:
-      'Another year, another lap! May every new chapter bring you closer to your dreams. Happy Birthday!',
-  },
-  {
-    name: 'Team Birthday',
-    message:
-      'Another year, another lap! May every new chapter bring you closer to your dreams. Happy Birthday!',
-  },
-  {
-    name: 'Team Birthday',
-    message:
-      'Another year, another lap! May every new chapter bring you closer to your dreams. Happy Birthday!',
-  },
-  {
-    name: 'Team Birthday',
-    message:
-      'Another year, another lap! May every new chapter bring you closer to your dreams. Happy Birthday!',
-  },
-];
 
 export default function SectionWishes() {
   const [name, setName] = useState('');
   const [message, setMessage] = useState('');
-  const [wishes, setWishes] = useState<Wish[]>(initialWishes);
+  const [wishes, setWishes] = useState<Wish[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadWishes() {
+      try {
+        const response = await fetch('/api/wishes', {
+          method: 'GET',
+          cache: 'no-store',
+          signal: controller.signal,
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result?.message || 'Gagal mengambil daftar ucapan.');
+        }
+
+        setWishes(Array.isArray(result.data) ? result.data : []);
+      } catch (err) {
+        if (controller.signal.aborted) return;
+
+        console.error('Fetch wishes error:', err);
+
+        setError(
+          err instanceof Error
+            ? err.message
+            : 'Gagal memuat ucapan. Silakan coba lagi.'
+        );
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadWishes();
+
+    return () => {
+      controller.abort();
+    };
+  }, []);
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
+    if (isSubmitting) return;
 
     const trimmedName = name.trim();
     const trimmedMessage = message.trim();
 
-    if (!trimmedName || !trimmedMessage) return;
+    if (!trimmedName || !trimmedMessage) {
+      setError('Nama dan ucapan wajib diisi.');
+      return;
+    }
 
-    setWishes((current) => [
-      { name: trimmedName, message: trimmedMessage },
-      ...current,
-    ]);
-    setName('');
-    setMessage('');
-    setSubmitted(true);
+    if (trimmedName.length > 60 || trimmedMessage.length > 500) {
+      setError('Nama maksimal 60 karakter dan ucapan maksimal 500 karakter.');
+      return;
+    }
 
-    window.setTimeout(() => setSubmitted(false), 2500);
+    setError('');
+    setSubmitted(false);
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('/api/wishes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: trimmedName,
+          message: trimmedMessage,
+        }),
+      });
+
+      const result = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(
+          result?.message || 'Gagal menyimpan ucapan. Silakan coba lagi.'
+        );
+      }
+
+      if (result?.data) {
+        setWishes((current) =>
+          [
+            result.data,
+            ...current.filter((wish) => wish.id !== result.data.id),
+          ].slice(0, 100)
+        );
+      } else {
+        const refreshResponse = await fetch('/api/wishes', {
+          cache: 'no-store',
+        });
+
+        const refreshResult = await refreshResponse.json();
+
+        if (!refreshResponse.ok) {
+          throw new Error(
+            refreshResult?.message ||
+              'Ucapan tersimpan, tetapi daftar gagal diperbarui.'
+          );
+        }
+
+        setWishes(Array.isArray(refreshResult.data) ? refreshResult.data : []);
+      }
+
+      setName('');
+      setMessage('');
+      setSubmitted(true);
+    } catch (err) {
+      console.error('Submit wish error:', err);
+
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Terjadi kesalahan. Silakan coba lagi.'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -77,15 +149,16 @@ export default function SectionWishes() {
     >
       {/* Racing background */}
       <div
-        className="absolute inset-0 -z-10 opacity-15"
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10 opacity-15"
         style={{
           backgroundImage:
             'repeating-linear-gradient(135deg, transparent 0px, transparent 35px, #FFFFFF 36px, transparent 37px)',
         }}
       />
 
-      <div className="absolute -top-20 -left-20 -z-10 h-72 w-72 rounded-full bg-[#FF3939]/15 blur-[100px]" />
-      <div className="absolute right-0 bottom-0 -z-10 h-72 w-72 rounded-full bg-[#164D78]/30 blur-[100px]" />
+      <div className="pointer-events-none absolute -top-20 -left-20 -z-10 h-72 w-72 rounded-full bg-[#FF3939]/15 blur-[100px]" />
+      <div className="pointer-events-none absolute right-0 bottom-0 -z-10 h-72 w-72 rounded-full bg-[#164D78]/30 blur-[100px]" />
 
       {/* Racing stripe */}
       <div className="absolute top-0 left-0 h-1 w-full bg-white/10">
@@ -153,6 +226,8 @@ export default function SectionWishes() {
 
                 <input
                   id="wish-name"
+                  type="text"
+                  autoComplete="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   maxLength={60}
@@ -186,16 +261,32 @@ export default function SectionWishes() {
                 </p>
               </div>
 
+              {error && (
+                <p
+                  role="alert"
+                  aria-live="polite"
+                  className="text-xs leading-5 text-[#FF7777]"
+                >
+                  {error}
+                </p>
+              )}
+
               <button
                 type="submit"
-                className="group mt-auto flex w-full items-center justify-center gap-3 bg-[#FF3939] px-4 py-3.5 text-xs font-black tracking-[0.15em] text-white uppercase transition hover:bg-[#FFD447] hover:text-[#07182B] focus-visible:ring-2 focus-visible:ring-[#FFD447] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B2742] focus-visible:outline-none"
+                disabled={isSubmitting}
+                className="group mt-auto flex w-full items-center justify-center gap-3 bg-[#FF3939] px-4 py-3.5 text-xs font-black tracking-[0.15em] text-white uppercase transition hover:bg-[#FFD447] hover:text-[#07182B] focus-visible:ring-2 focus-visible:ring-[#FFD447] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B2742] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Send Birthday Wish <span>↗</span>
+                <span>
+                  {isSubmitting ? 'Sending...' : 'Send Birthday Wish'}
+                </span>
+
+                {!isSubmitting && <span>↗</span>}
               </button>
 
               {submitted && (
                 <p
                   role="status"
+                  aria-live="polite"
                   className="text-center text-xs font-bold text-[#FFD447]"
                 >
                   Your wish has crossed the finish line! 🏆
@@ -222,36 +313,60 @@ export default function SectionWishes() {
               </span>
             </div>
 
-            <div className="max-h-[360px] space-y-3 overflow-y-auto pr-1 lg:max-h-none lg:min-h-0 lg:flex-1">
-              {wishes.map((wish, index) => (
-                <article
-                  key={`${wish.name}-${index}`}
-                  className="group rounded-xl border border-white/10 bg-[#0B2742]/70 p-4 transition duration-300 hover:border-[#FF3939]/50 hover:bg-[#0B2742] sm:p-5"
-                >
-                  <div className="flex items-start gap-3 sm:gap-4">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[#FF3939]/30 bg-[#FF3939]/10 text-base font-black text-[#FF3939] sm:h-11 sm:w-11 sm:text-lg">
-                      {wish.name.charAt(0).toUpperCase()}
-                    </div>
-
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <h4 className="text-sm font-black uppercase italic sm:text-base">
-                          {wish.name}
-                        </h4>
-
-                        <span className="text-xs text-[#FFD447]">✦</span>
+            <div
+              aria-live="polite"
+              className="max-h-[360px] space-y-3 overflow-y-auto pr-1 lg:max-h-none lg:min-h-0 lg:flex-1"
+            >
+              {isLoading ? (
+                <div className="rounded-xl border border-white/10 bg-[#0B2742]/70 p-6 text-center text-sm text-white/50">
+                  Loading birthday wishes...
+                </div>
+              ) : wishes.length === 0 ? (
+                <div className="rounded-xl border border-white/10 bg-[#0B2742]/70 p-6 text-center">
+                  <p className="text-sm font-bold text-white/70">
+                    Be the first to leave a wish!
+                  </p>
+                  <p className="mt-2 text-xs leading-5 text-white/40">
+                    Your message could make Ryuiichi&apos;s day extra special.
+                  </p>
+                </div>
+              ) : (
+                wishes.map((wish) => (
+                  <article
+                    key={wish.id}
+                    className="group rounded-xl border border-white/10 bg-[#0B2742]/70 p-4 transition duration-300 hover:border-[#FF3939]/50 hover:bg-[#0B2742] sm:p-5"
+                  >
+                    <div className="flex items-start gap-3 sm:gap-4">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[#FF3939]/30 bg-[#FF3939]/10 text-base font-black text-[#FF3939] sm:h-11 sm:w-11 sm:text-lg">
+                        {wish.name.charAt(0).toUpperCase()}
                       </div>
 
-                      <p className="mt-2 text-xs leading-6 break-words text-white/65 sm:text-sm sm:leading-7">
-                        {wish.message}
-                      </p>
-                    </div>
-                  </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <h4 className="text-sm font-black uppercase italic sm:text-base">
+                            {wish.name}
+                          </h4>
 
-                  <div className="mt-4 h-px bg-gradient-to-r from-[#FF3939]/60 via-white/10 to-transparent" />
-                </article>
-              ))}
+                          <span className="text-xs text-[#FFD447]">✦</span>
+                        </div>
+
+                        <p className="mt-2 text-xs leading-6 break-words whitespace-pre-wrap text-white/65 sm:text-sm sm:leading-7">
+                          {wish.message}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 h-px bg-gradient-to-r from-[#FF3939]/60 via-white/10 to-transparent" />
+                  </article>
+                ))
+              )}
             </div>
+
+            {!isLoading && wishes.length > 0 && (
+              <p className="mt-3 text-right text-[10px] text-white/35">
+                Showing the latest {wishes.length} wishes
+              </p>
+            )}
           </div>
         </div>
 

@@ -29,7 +29,7 @@ export default function SectionHero() {
         <a href="#home" className="flex items-center gap-2.5">
           <span className="text-2xl">🏁</span>
           <span className="text-sm font-black tracking-[0.2em]">
-            RJCH RACING
+            RJC RACING
           </span>
         </a>
 
@@ -119,7 +119,7 @@ export default function SectionHero() {
               DRIVER
             </p>
             <p className="mt-1 text-xs font-black tracking-wider sm:text-sm">
-              RJCH
+              RJC
             </p>
           </div>
 
