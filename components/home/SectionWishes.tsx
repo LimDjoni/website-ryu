@@ -253,7 +253,7 @@ export default function SectionWishes() {
                   required
                   rows={3}
                   placeholder="Write something special..."
-                  className="w-full resize-y rounded-lg border border-white/10 bg-[#07182B] px-4 py-3 text-sm leading-6 text-white transition outline-none placeholder:text-white/30 focus:border-[#FFD447]"
+                  className="w-full resize-none rounded-lg border border-white/10 bg-[#07182B] px-4 py-3 text-sm leading-6 text-white transition outline-none placeholder:text-white/30 focus:border-[#FFD447]"
                 />
 
                 <p className="mt-1 text-right text-[10px] text-white/40">

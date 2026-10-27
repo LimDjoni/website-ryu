@@ -46,7 +46,7 @@ export default function SectionAbout() {
           {/* Profile photo */}
           <div className="relative min-h-52 overflow-hidden bg-[#164D78] sm:min-h-64 md:min-h-0">
             <Image
-              src="/images/ryuiichi.jpeg"
+              src="/images/ryu 2.jpeg"
               alt="Ryuiichi Jovin Chen"
               fill
               priority

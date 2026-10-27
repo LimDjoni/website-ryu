@@ -332,7 +332,7 @@ export default function SectionAttendance() {
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       placeholder="Write a short message..."
-                      className="w-full resize-y rounded-none border border-white/15 bg-[#07182B] px-3 py-2.5 text-sm text-white transition outline-none placeholder:text-white/30 focus:border-[#FF3939] focus:ring-1 focus:ring-[#FF3939]/30"
+                      className="w-full resize-none rounded-none border border-white/15 bg-[#07182B] px-3 py-2.5 text-sm text-white transition outline-none placeholder:text-white/30 focus:border-[#FF3939] focus:ring-1 focus:ring-[#FF3939]/30"
                     />
 
                     <p className="mt-1 text-right text-[10px] text-white/30">
